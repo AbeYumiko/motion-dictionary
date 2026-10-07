@@ -18,7 +18,7 @@
 - **推奨位置**：冒頭（最初の2秒）／本編／締め（最後の数秒）。
 - **差し替えできる文言**：`render.html` の `text` や `motion.json` の `"text"` に `{"名前": "文言"}` で渡す。`<br>` で改行できる。初期値と形（配列など）は末尾の「props の初期値」を見る。
 
-パレット：`glowup` / `lemon` / `mp213` / `clustr` / `tanzania` / `zanzibar` / `ibiza` / `maldives` / `madeira` / `cherry` / `reel`（`reel` はリールの3色＝濃紺・ライム・水色）
+パレット：`glowup` / `lemon` / `mp213` / `clustr` / `tanzania` / `zanzibar` / `ibiza` / `maldives` / `madeira` / `cherry` / `snow` / `sakura` / `forest` / `cobalt` / `reel`（`reel` はリールの3色＝濃紺・ライム・水色）
 
 ## メーター・ゲージ（#001〜#015）
 

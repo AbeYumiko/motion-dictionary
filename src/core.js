@@ -12,6 +12,10 @@ const PALETTES = {
   maldives:{name:"Maldives / Scale Yellow",bg:"#1E2F55", surf:"#8A3D8F", ink:"#DCD6C8", onSurf:"#DCD6C8", acc:"#E3B23C", onAcc:"#1E2F55", sub:"#8A3D8F", chips:["#1E2F55","#8A3D8F","#E3B23C","#DCD6C8"]},
   madeira: {name:"Madeira / Purple",   bg:"#A8ABAD", surf:"#3D734B", ink:"#424548", onSurf:"#FFFFFF", acc:"#87549C", onAcc:"#FFFFFF", sub:"#3D734B", chips:["#3D734B","#424548","#87549C","#A8ABAD"]},
   cherry:  {name:"Cherry / Sangria",   bg:"#FFF8E7", surf:"#95BBEA", ink:"#930500", onSurf:"#930500", acc:"#930500", onAcc:"#FFF8E7", sub:"#95BBEA", chips:["#FFF8E7","#930500","#95BBEA"]},
+  snow:    {name:"Snow / Vermilion",   bg:"#FFFFFF", surf:"#161616", ink:"#161616", onSurf:"#FFFFFF", acc:"#E8432A", onAcc:"#FFFFFF", sub:"#9B9B9B", chips:["#FFFFFF","#161616","#E8432A","#9B9B9B"]},
+  sakura:  {name:"Sakura / Rose",      bg:"#F8E1E6", surf:"#FFFFFF", ink:"#5B2E3C", onSurf:"#5B2E3C", acc:"#D2416E", onAcc:"#FFFFFF", sub:"#C08A99", chips:["#F8E1E6","#5B2E3C","#D2416E","#C08A99","#FFFFFF"]},
+  forest:  {name:"Forest / Peach",     bg:"#1E3A2B", surf:"#2D5640", ink:"#F2EEE1", onSurf:"#F2EEE1", acc:"#FFA585", onAcc:"#1E3A2B", sub:"#8FB89A", chips:["#1E3A2B","#2D5640","#FFA585","#8FB89A","#F2EEE1"]},
+  cobalt:  {name:"Cobalt / Mint",      bg:"#1F3FD1", surf:"#FFFFFF", ink:"#FFFFFF", onSurf:"#1F3FD1", acc:"#7EF0C4", onAcc:"#0E1E66", sub:"#A9B8FF", chips:["#1F3FD1","#7EF0C4","#A9B8FF","#FFFFFF","#0E1E66"]},
   reel:    {name:"Reel / Lime×Sky",    bg:"#14213D", surf:"#FFFFFF", ink:"#FFFFFF", onSurf:"#14213D", acc:"#D6E86A", onAcc:"#14213D", sub:"#8EDBF7", chips:["#14213D","#D6E86A","#8EDBF7","#FFFFFF"]},
 };
 

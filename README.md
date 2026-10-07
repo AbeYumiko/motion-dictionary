@@ -34,7 +34,7 @@ render.html?id=19&pal=reel&bg=transparent&text={"value":"52,000","note":"人 突
 | パラメータ | 中身 |
 |---|---|
 | `id` | シーン番号（必須） |
-| `pal` | パレット名（`glowup` / `lemon` / … / `reel`）か、7色のHEXを `bg,ink,surf,onSurf,acc,onAcc,sub` の順にカンマ区切り |
+| `pal` | パレット名（`glowup` / `lemon` / … / `cobalt` / `reel`。全15種）か、7色のHEXを `bg,ink,surf,onSurf,acc,onAcc,sub` の順にカンマ区切り |
 | `bg` | `palette`（既定）／`transparent`（背景を抜く）／`green`（グリーンバック #00FF00） |
 | `text` | 差し替え文言（JSON）。キーはシーンの `props` の名前。使えるものは `motion-catalog.md` |
 | `scale` / `y` | 縮小率（0.3〜1）と中心の高さ（0.5＝中央）。人物動画に重ねるとき用 |

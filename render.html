@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<title>モーション書き出し</title>
+<!--
+  1シーンだけを 1080×1920 で再生する書き出し用ページ。
+  render.html?id=19&pal=reel&bg=transparent&text={"value":5000,"unit":"人"}
+    id    シーン番号（必須）
+    pal   パレット名（glowup / reel など）か、7色のHEXを「bg,ink,surf,onSurf,acc,onAcc,sub」の順にカンマ区切り
+    bg    palette（既定）/ transparent（透過）/ green（グリーンバック #00FF00）
+    text  差し替え文言（JSON。キーはシーンの props の名前）
+    scale 縮小率（0.3〜1、既定1）  y 中心の高さ（画面に対する割合、既定0.5）
+    capture=1  書き出し用（時計を止め、window.__seek(ms) で1コマずつ進める）
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;600&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="src/clock.js"></script>
+<style>
+  html, body { margin: 0; background: transparent; }
+  body { width: 1080px; height: 1920px; overflow: hidden; position: relative; }
+  body.green { background: #00FF00; }
+  #stage { position: absolute; left: 0; top: 0; width: 1080px; transform-origin: 50% 50%; }
+  #stage.clear { background: transparent; }
+  #err { position: absolute; inset: 0; display: grid; place-items: center; font: 700 40px/1.6 "Noto Sans JP", sans-serif; color: #B3261E; background: #fff; padding: 80px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="stage" id="stage"></div>
+<link rel="stylesheet" href="src/core.css">
+<script src="src/core.js"></script>
+<script src="src/scenes/01-meter.js"></script>
+<script src="src/scenes/02-graph.js"></script>
+<script src="src/scenes/03-list.js"></script>
+<script src="src/scenes/04-flow.js"></script>
+<script src="src/scenes/05-terminal.js"></script>
+<script src="src/scenes/06-chat.js"></script>
+<script src="src/scenes/07-title.js"></script>
+<script src="src/scenes/08-logo.js"></script>
+<script src="src/scenes/09-icon.js"></script>
+<script src="src/scenes/10-hook.js"></script>
+<script src="src/index.js"></script>
+<script>
+(() => {
+  const P = new URLSearchParams(location.search);
+  const stage = document.getElementById("stage");
+  const fail = msg => { document.body.insertAdjacentHTML("beforeend", `<div id="err">${msg}</div>`); window.__error = msg; };
+
+  const id = parseInt(P.get("id") || "", 10);
+  const s = SCENES.find(x => x.id === id);
+  if (!s) return fail(`シーン番号 id=${P.get("id") ?? "（なし）"} が見つかりません（1〜${SCENES.length}）`);
+
+  /* パレット：名前 or 7色 */
+  let pal = PALETTES[s.pal];
+  const pv = (P.get("pal") || "").trim();
+  if (pv) {
+    if (PALETTES[pv]) pal = PALETTES[pv];
+    else {
+      const hex = pv.split(/[\s,]+/).filter(Boolean).map(h => h.replace(/^#?/, "#").toUpperCase());
+      if (hex.length !== 7 || !hex.every(h => /^#[0-9A-F]{6}$/.test(h)))
+        return fail(`pal=${pv} は使えません。パレット名（${Object.keys(PALETTES).join(" / ")}）か、7色のHEXを指定してください`);
+      pal = Object.fromEntries(ROLES.map(([k], i) => [k, hex[i]]));
+    }
+  }
+  applyPal(stage, pal);
+
+  /* 背景 */
+  const bg = P.get("bg") || "palette";
+  if (bg === "transparent" || bg === "green") stage.classList.add("clear");
+  if (bg === "green") document.body.classList.add("green");
+
+  /* 位置と大きさ（人物動画に重ねるとき用） */
+  const scale = Math.min(1, Math.max(.3, parseFloat(P.get("scale") || "1")));
+  const y = parseFloat(P.get("y") || ".5");
+  stage.style.transform = `translateY(${(y - .5) * 1920}px) scale(${scale})`;
+
+  /* 差し替え文言 */
+  let text = {};
+  if (P.get("text")) {
+    try { text = JSON.parse(P.get("text")); }
+    catch (e) { return fail("text の JSON が読めません：" + e.message); }
+    const unknown = Object.keys(text).filter(k => !(s.props && k in s.props));
+    if (unknown.length) console.warn(`#${s.id} に無い props:`, unknown, "使えるもの:", Object.keys(s.props || {}));
+  }
+
+  const capture = /[?&]capture=1\b/.test(location.search);
+  window.__scene = { id: s.id, name: s.name, loop: s.loop, props: sceneProps(s) };
+  window.__mount = () => {           // 書き出し側から呼ぶ：置き直して、その時刻を返す
+    window.__reset && window.__reset();
+    mount(stage, s, text);
+    window.__clockStart && window.__clockStart();
+    return performance.now();
+  };
+  if (capture) { window.__mount(); return; }
+  const loop = () => { mount(stage, s, text); setTimeout(loop, s.loop); };
+  loop();
+})();
+</script>
+</body></html>

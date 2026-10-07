@@ -1,0 +1,88 @@
+# モーション辞典
+
+ショート動画（9:16）用のアニメーションを集めた辞典です。10カテゴリ × 15シーン、#001〜#150。
+ブラウザで開くだけで、全シーンの動きとカラーの組み合わせを確かめられます。
+
+- 公開ページ：https://abeyumiko.github.io/motion-dictionary/
+- 手元で見る：`dictionary.html` をダブルクリック（サーバー不要。フォントだけ Google Fonts から読みます）
+
+## 中身
+
+```
+src/
+  scenes/      カテゴリごとのシーン定義（01-meter.js 〜 10-hook.js）
+  core.css     舞台（9:16）と共通アニメーション
+  core.js      パレット・補助関数（countUp / typeText / after / every / reveal / ch …）・シーン登録
+  index.js     全シーンをまとめて SCENES を作る
+  clock.js     書き出し用の時計（render.html?capture=1 のときだけ働く）
+dictionary.html  辞典（公開ページ）
+render.html      1シーンだけを 1080×1920 で再生する書き出し用ページ
+motion-catalog.md  シーンを選ぶための一覧（どんな会話で使うか・差し替えできる文言・尺）
+tools/
+  check_catalog.py  一覧と辞典の食い違いを調べる
+  verify.py         元の1ファイル版と見た目が同じかを、コマ単位で見比べる
+```
+
+辞典と書き出しは同じ `src/` を読みます。シーンを1か所直せば、辞典にもリール制作にも反映されます。
+
+## render.html の使い方
+
+```
+render.html?id=19&pal=reel&bg=transparent&text={"value":"52,000","note":"人 突破"}
+```
+
+| パラメータ | 中身 |
+|---|---|
+| `id` | シーン番号（必須） |
+| `pal` | パレット名（`glowup` / `lemon` / … / `reel`）か、7色のHEXを `bg,ink,surf,onSurf,acc,onAcc,sub` の順にカンマ区切り |
+| `bg` | `palette`（既定）／`transparent`（背景を抜く）／`green`（グリーンバック #00FF00） |
+| `text` | 差し替え文言（JSON）。キーはシーンの `props` の名前。使えるものは `motion-catalog.md` |
+| `scale` / `y` | 縮小率（0.3〜1）と中心の高さ（0.5＝中央）。人物動画に重ねるとき用 |
+| `capture=1` | 書き出し用。時計を止めて `window.__seek(ミリ秒)` で1コマずつ進める |
+
+## シーンを追加する
+
+### 決まり
+
+- 番号は **#151 から**続ける。既存の番号・名前・動きは変えない（番号で呼んでいるため）。
+- カテゴリは既存の10個のどれかに入れる：メーター・ゲージ／グラフ・数値／リスト・カード／図解・フロー／ターミナル・コード／チャット・会話／タイトル・文字／ロゴ／アイコン／フック・冒頭
+- 外部のロゴ・キャラクター・他社のデザインは入れない。
+- サイズは `cqw`（舞台の幅に対する割合）で書く。色は舞台の CSS 変数（`--bg --ink --surf --onSurf --acc --onAcc --sub`）だけを使う。
+- 文字や数字は `props` に出して、差し替えられるようにする。
+
+### シーン定義の形
+
+カテゴリのファイル（例：`src/scenes/02-graph.js`）の配列の最後に足します。
+
+```js
+{ id:151, pal:"lemon", name:"シーン名", desc:"どう動くかの説明（辞典に出る）", loop:4500,
+  props:{ title:"見出し", value:120 },
+  css:`.g151 .big{font-size:20cqw}`,          // クラス名はシーンごとに重ならない名前に
+  html:p=>`<div class="center g151 fc"><div class="h2 a fu">${p.title}</div><div class="big en ac" data-n>0</div></div>`,
+  init(el,p){ countUp(el.querySelector("[data-n]"), num(p.value), 1500, 300); } },
+```
+
+- `loop`：1回の再生時間（ミリ秒）。辞典ではこの間隔でくり返し、リールではこれが「尺」になります。
+- `html`：`props` を受け取って HTML を返す関数（文字だけのシーンは文字列でも可）。
+- 共通アニメーションはクラスで付けます：`a` ＋ 種類（`fu` 下から／`pp` ポップ／`sl` `sr` 左右から／`zi` ズーム／`bo` 弾む …）、開始は `style="--d:.4s"`。
+- JS で動かす部分（カウントアップ・タイピングなど）は `init(el, p)` に書き、`setTimeout` や `countUp` / `typeText` / `after` / `every` を使います（書き出しのときに1コマずつ止められるように）。
+
+### 更新の流れ
+
+1. シーンを足す（上の形）
+2. `dictionary.html` を開いて、表示と動きを確認する（右上の検索に番号や名前を入れると早い）
+3. `motion-catalog.md` の、そのカテゴリの表に1行足す（「こんな会話で使う」は台本の言い回しの例を2〜3個）。props があれば末尾の「props の初期値」にも1行
+4. 食い違いがないか調べる（リール作成フォルダから）
+   ```bash
+   .venv/bin/python motion-library/tools/check_catalog.py
+   ```
+5. 公開する
+   ```bash
+   cd motion-library && git add -A && git commit -m "#151 シーン名 を追加" && git push
+   ```
+   1〜2分で公開ページに反映されます。
+
+## メモ
+
+- 登録したカラーは、見ている人のブラウザ（localStorage）にだけ保存されます。
+- 見本の文言に出てくる「YOUR NAME」「YOUR BRAND」「やまだ はなこ」は仮の名前です。

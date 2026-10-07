@@ -35,6 +35,8 @@ input[type=search]{width:200px;border-radius:999px}
 .cat{white-space:nowrap;font-size:12px;padding:6px 12px;border-radius:999px;border:1px solid var(--ui-line);background:var(--ui-card);cursor:pointer}
 .cat.on{background:var(--ui-acc);color:var(--ui-onacc);border-color:var(--ui-acc)}
 main{padding-block:20px 60px}
+.foot{padding-block:24px 48px;border-top:1px solid var(--ui-line);display:flex;flex-direction:column;gap:8px;font-size:12px;line-height:1.8;color:var(--ui-sub);max-width:1280px}
+.foot b{color:var(--ui-ink)}
 
 /* registration panel */
 .reg{background:var(--ui-card);border:1px solid var(--ui-line);border-radius:16px;padding:18px;margin-bottom:22px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:22px}
@@ -140,6 +142,12 @@ textarea{resize:vertical;min-height:62px;font-family:var(--f-mono);font-size:12p
 
   <div class="grid" id="grid"></div>
 </main>
+
+<footer class="wrap foot">
+  <p><b>ご利用について</b>　この辞典のシーン（デザイン・コード）の<b>再配布と販売は禁止</b>です。そのまま、または手を加えて配布・公開・販売することはできません。</p>
+  <p><b>カラーの登録について</b>　登録したカラーは、見ている方のブラウザ（localStorage）にだけ保存されます。サーバーには送られず、辞典そのものや、ほかの方の画面は変わりません。閲覧データを消したとき・シークレットウィンドウを閉じたとき・別の端末やブラウザで開いたときは表示されません。</p>
+  <p>© 2026 FUN WEB DESIGN</p>
+</footer>
 
 <div class="sheet" id="sheet" hidden>
   <div class="wrap">
@@ -411,6 +419,6 @@ document.getElementById("save").onclick=savePalette;
 
 /* boot */
 refreshAllPal(); buildCards(); setUser(LS.get("md.palettes",{}));
-document.getElementById("storeNote").textContent="登録したカラーはこのブラウザに保存されています。";
+document.getElementById("storeNote").textContent="登録したカラーは、このブラウザ（localStorage）にだけ保存されます。サーバーには送られず、ほかの人や別の端末・別のブラウザには表示されません。閲覧データを消したときやシークレットウィンドウを閉じたときに消えます。";
 </script>
 </body></html>

@@ -242,6 +242,15 @@ function copyText(text, msg, b){
   const fail=()=>{ if(fallbackCopy(text)) done(); else showToast("コピーできませんでした。長押しで選択してください"); };
   try{ navigator.clipboard.writeText(text).then(done,fail); }catch(err){ fail(); }
 }
+/* 1シーンだけが動く HTML をファイルとして保存（テキストエディットで貼る手間と、RTF で保存してしまう失敗をなくす） */
+function downloadCode(s, pal, b){
+  const name=`${String(s.id).padStart(3,"0")}_${s.name.replace(/[\\/:*?"<>|]/g,"").replace(/\s+/g,"_")}.html`;
+  const url=URL.createObjectURL(new Blob([buildCode(s,pal)],{type:"text/html;charset=utf-8"}));
+  const a=document.createElement("a"); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),4000);
+  showToast(`${name} を保存しました（ダブルクリックで開けます）`);
+  if(b){ b.classList.add("done"); setTimeout(()=>b.classList.remove("done"),1200); }
+}
 document.addEventListener("click",e=>{
   const b=e.target.closest("[data-hex]"); if(!b) return;
   copyText(b.dataset.hex, "コピーしました："+b.dataset.hex, b);
@@ -272,12 +281,14 @@ function buildCards(){
         <div class="row"><select id="sel-${s.id}" aria-label="カラー"></select></div>
         <div class="row"><button class="btn" data-a="cmp" type="button" style="flex:1">全カラーで見る</button>
           <button class="btn" data-a="play" type="button">▶ 再生</button></div>
+        <div class="row"><button class="btn" data-a="dl" type="button" style="flex:1" title="このシーンだけが動く HTML ファイルを保存（ダブルクリックで開けます）">⬇ HTMLをダウンロード</button></div>
         <div class="row"><button class="btn" data-a="code" type="button" style="flex:1" title="このシーンだけが動く HTML ファイルの中身をコピー">&lt;/&gt; コードをコピー</button>
           <button class="btn" data-a="prompt" type="button" style="flex:1" title="AI に同じ動きを作ってもらう指示文をコピー">✎ プロンプト</button></div>
       </div>`;
     card.querySelector("select").onchange=e=>{ choice[s.id]=e.target.value; LS.set("md.choice2",choice); refreshCard(card,true); };
     card.querySelector('[data-a=play]').onclick=()=>play(card.querySelector(".stage"),s);
     card.querySelector('[data-a=cmp]').onclick=()=>openCompare(card);
+    card.querySelector('[data-a=dl]').onclick=e=>downloadCode(s,palOf(keyFor(s)),e.currentTarget);
     card.querySelector('[data-a=code]').onclick=e=>copyText(buildCode(s,palOf(keyFor(s))),"コードをコピーしました（.html で保存すると、そのまま動きます）",e.currentTarget);
     card.querySelector('[data-a=prompt]').onclick=e=>copyText(buildPrompt(s,palOf(keyFor(s))),"プロンプトをコピーしました（Claude や ChatGPT に貼り付けてください）",e.currentTarget);
     grid.appendChild(card); cards.push(card);

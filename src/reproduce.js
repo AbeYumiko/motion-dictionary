@@ -3,7 +3,8 @@ const SITE_URL = "https://abeyumiko.github.io/motion-dictionary/";
 
 /* core.css の中身（同じサイトから読めればそのまま埋め込む。file:// などで読めないときは公開版を link で読む） */
 let CORE_CSS = null;
-fetch("src/core.css").then(r => r.ok ? r.text() : null).then(t => { CORE_CSS = t; }).catch(() => {});
+if (location.protocol !== "file:")   // ファイルを直接開いたときは読めない（ブラウザの制限）ので、公開版の core.css を link する
+  fetch("src/core.css").then(r => r.ok ? r.text() : null).then(t => { CORE_CSS = t; }).catch(() => {});
 
 /* シーンの init が使う補助関数だけを、core.js からそのまま書き写す（中で呼んでいる関数もたどる） */
 const HELPERS = { D, fmtc, num, TW, SV, DOTS, HEART, countUp, typeText, ch, every, after, svgArc, reveal, typeSeq };

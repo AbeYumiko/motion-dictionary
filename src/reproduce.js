@@ -5,16 +5,35 @@ const SITE_URL = "https://abeyumiko.github.io/motion-dictionary/";
 let CORE_CSS = null;
 fetch("src/core.css").then(r => r.ok ? r.text() : null).then(t => { CORE_CSS = t; }).catch(() => {});
 
-/* シーンの init が使う補助関数（core.js から、そのまま書き写す） */
-function helpersSource() {
-  const fns = [countUp, typeText, ch, every, after, svgArc, reveal, typeSeq];
-  const consts = { D, fmtc, num, TW, SV };
-  return [
-    ...Object.entries(consts).map(([k, f]) => `const ${k} = ${f.toString()};`),
-    `const DOTS = ${JSON.stringify(DOTS)};`,
-    `const HEART = ${JSON.stringify(HEART)};`,
-    ...fns.map(f => f.toString()),
-  ].join("\n");
+/* シーンの init が使う補助関数だけを、core.js からそのまま書き写す（中で呼んでいる関数もたどる） */
+const HELPERS = { D, fmtc, num, TW, SV, DOTS, HEART, countUp, typeText, ch, every, after, svgArc, reveal, typeSeq };
+const hasWord = (src, w) => new RegExp("(^|[^\\w$])" + w + "([^\\w$]|$)").test(src);
+function helpersFor(src) {
+  const need = new Set(), queue = [src];
+  while (queue.length) {
+    const s = queue.pop();
+    for (const k in HELPERS) if (!need.has(k) && hasWord(s, k)) { need.add(k); queue.push(String(HELPERS[k])); }
+  }
+  return Object.keys(HELPERS).filter(k => need.has(k)).map(k => {
+    const v = HELPERS[k];
+    if (typeof v === "string") return `const ${k} = ${JSON.stringify(v)};`;
+    const f = v.toString();
+    return f.startsWith("function") ? f : `const ${k} = ${f};`;
+  }).join("\n");
+}
+
+/* core.css のうち、このシーンで使うルールだけを残す。
+   セレクタのクラス名がすべて HTML・動きのコード・シーンの css に出てくるルールと、そこから使われる @keyframes だけ */
+function coreCSSFor(corpus) {
+  let rules;
+  try { const sh = new CSSStyleSheet(); sh.replaceSync(CORE_CSS); rules = [...sh.cssRules]; }
+  catch (e) { return CORE_CSS; }
+  const words = new Set(corpus.match(/[\w-]+/g) || []);
+  const kept = rules.filter(r => r.selectorText && r.selectorText.split(",").some(sel =>
+    (sel.match(/\.[\w-]+/g) || []).every(c => words.has(c.slice(1)))));
+  const used = new Set((kept.map(r => r.cssText).join("\n") + corpus).match(/[\w-]+/g) || []);
+  const frames = rules.filter(r => r.type === CSSRule.KEYFRAMES_RULE && used.has(r.name));
+  return [...kept, ...frames].map(r => r.cssText).join("\n");
 }
 
 /* 別のシーンの css に書かれた @keyframes を借りているシーンがある（例：#021 の m8s、#143 の w14）。
@@ -47,8 +66,9 @@ function buildCode(s, pal) {
   if (init && !/^init\s*\(/.test(init)) init = "init: " + init;
   const html = sceneHTML(s, p);
   const own = [(s.css || "") + (s.css2 || ""), borrowedKeyframes(s, html)].filter(Boolean).join("\n");
+  const corpus = ["stage", html, init, own].join("\n");   // stage はページ側の舞台のクラス
   const css = CORE_CSS
-    ? `<style>\n${CORE_CSS}\n${own}\n</style>`
+    ? `<style>\n${coreCSSFor(corpus)}\n${own}\n</style>`
     : `<link rel="stylesheet" href="${SITE_URL}src/core.css">\n<style>\n${own}\n</style>`;
   return `<!doctype html>
 <html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -65,7 +85,7 @@ ${css}
 </head><body>
 <div class="stage" id="stage" style="${vars}"></div>
 <script>
-${helpersSource()}
+${helpersFor(init) || "// 補助関数は使っていません"}
 
 const P = ${JSON.stringify(p)};          // 差し替えできる文言（HTML にはすでに入っています）
 const HTML = ${JSON.stringify(html)};

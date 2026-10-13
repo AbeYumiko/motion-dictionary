@@ -15,6 +15,7 @@ src/
   core.js      パレット・補助関数（countUp / typeText / after / every / reveal / ch …）・シーン登録
   index.js     全シーンをまとめて SCENES を作る
   clock.js     書き出し用の時計（render.html?capture=1 のときだけ働く）
+  reproduce.js 再現用のコピー（単体で動く HTML／AI 向けプロンプト）を作る
 dictionary.html  辞典（公開ページ）
 render.html      1シーンだけを 1080×1920 で再生する書き出し用ページ
 motion-catalog.md  シーンを選ぶための一覧（どんな会話で使うか・差し替えできる文言・尺）
@@ -81,6 +82,13 @@ render.html?id=19&pal=reel&bg=transparent&text={"value":"52,000","note":"人 突
    cd motion-library && git add -A && git commit -m "#151 シーン名 を追加" && git push
    ```
    1〜2分で公開ページに反映されます。
+
+## 再現用のコピー（各カードのボタン）
+
+- **</> コードをコピー**：そのシーンだけが動く HTML 1ファイル分をコピーします。テキストエディタに貼って `.html` で保存し、ブラウザで開くとそのまま動きます（いま選んでいるカラーで出ます）。
+- **✎ プロンプト**：Claude や ChatGPT に「同じ動きを作って」と頼むための指示文をコピーします（動き・尺・7色の HEX・文言・動きの作法）。
+- 中身を作っているのは `src/reproduce.js`。コードには出典と利用条件（再配布・販売禁止）のコメントが入ります。
+- ほかのシーンの css の `@keyframes` を借りているシーン（#021・#143 など）も、使っている分を探して一緒に入れます。
 
 ## ご利用について
 

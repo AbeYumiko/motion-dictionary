@@ -82,7 +82,7 @@ textarea{resize:vertical;min-height:62px;font-family:var(--f-mono);font-size:12p
 .hex i{width:13px;height:13px;border-radius:4px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14);flex:none}
 .hex:hover{background:var(--ui-soft)}
 .hex.all{font-family:var(--f-ui);padding-left:7px}
-.hex.done{border-color:var(--ui-ink)}
+.hex.done,.btn.done{border-color:var(--ui-ink)}
 .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 20px);transform:translate(-50%,20px);opacity:0;z-index:80;background:var(--ui-acc);color:var(--ui-onacc);font-size:12px;padding:8px 14px;border-radius:999px;transition:.2s;pointer-events:none;font-family:var(--f-mono)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
@@ -174,6 +174,7 @@ textarea{resize:vertical;min-height:62px;font-family:var(--f-mono);font-size:12p
 <script src="src/scenes/09-icon.js"></script>
 <script src="src/scenes/10-hook.js"></script>
 <script src="src/index.js"></script>
+<script src="src/reproduce.js"></script>
 <script>
 /* ===== Palette registry ===== */
 const BUILTIN = Object.keys(PALETTES);
@@ -236,12 +237,14 @@ function fallbackCopy(text){
   const ta=document.createElement("textarea"); ta.value=text; ta.setAttribute("readonly",""); ta.style.cssText="position:fixed;opacity:0;top:0;left:0";
   document.body.appendChild(ta); ta.select(); let ok=false; try{ ok=document.execCommand("copy"); }catch(e){} ta.remove(); return ok;
 }
-document.addEventListener("click",e=>{
-  const b=e.target.closest("[data-hex]"); if(!b) return;
-  const text=b.dataset.hex;
-  const done=()=>{ showToast("コピーしました："+text); b.classList.add("done"); setTimeout(()=>b.classList.remove("done"),1200); };
+function copyText(text, msg, b){
+  const done=()=>{ showToast(msg); if(b){ b.classList.add("done"); setTimeout(()=>b.classList.remove("done"),1200); } };
   const fail=()=>{ if(fallbackCopy(text)) done(); else showToast("コピーできませんでした。長押しで選択してください"); };
   try{ navigator.clipboard.writeText(text).then(done,fail); }catch(err){ fail(); }
+}
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-hex]"); if(!b) return;
+  copyText(b.dataset.hex, "コピーしました："+b.dataset.hex, b);
 });
 function esc(t){ const d=document.createElement("div"); d.textContent=t; return d.innerHTML; }
 
@@ -269,10 +272,14 @@ function buildCards(){
         <div class="row"><select id="sel-${s.id}" aria-label="カラー"></select></div>
         <div class="row"><button class="btn" data-a="cmp" type="button" style="flex:1">全カラーで見る</button>
           <button class="btn" data-a="play" type="button">▶ 再生</button></div>
+        <div class="row"><button class="btn" data-a="code" type="button" style="flex:1" title="このシーンだけが動く HTML ファイルの中身をコピー">&lt;/&gt; コードをコピー</button>
+          <button class="btn" data-a="prompt" type="button" style="flex:1" title="AI に同じ動きを作ってもらう指示文をコピー">✎ プロンプト</button></div>
       </div>`;
     card.querySelector("select").onchange=e=>{ choice[s.id]=e.target.value; LS.set("md.choice2",choice); refreshCard(card,true); };
     card.querySelector('[data-a=play]').onclick=()=>play(card.querySelector(".stage"),s);
     card.querySelector('[data-a=cmp]').onclick=()=>openCompare(card);
+    card.querySelector('[data-a=code]').onclick=e=>copyText(buildCode(s,palOf(keyFor(s))),"コードをコピーしました（.html で保存すると、そのまま動きます）",e.currentTarget);
+    card.querySelector('[data-a=prompt]').onclick=e=>copyText(buildPrompt(s,palOf(keyFor(s))),"プロンプトをコピーしました（Claude や ChatGPT に貼り付けてください）",e.currentTarget);
     grid.appendChild(card); cards.push(card);
     refreshCard(card,false); io.observe(card);
   });
